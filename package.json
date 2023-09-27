@@ -19,5 +19,8 @@
   "homepage": "https://github.com/TheXro/webCrawler#readme",
   "devDependencies": {
     "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "jsdom": "^22.1.0"
   }
 }
