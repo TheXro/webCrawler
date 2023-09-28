@@ -32,11 +32,50 @@ test("normalizeURL http", () => {
 test("getting all URLs from HTMl  ", () => {
   const input =
     '<a href="https://www.google.com/search">Google</a> <a href="/search/bitch">Bing</a> <a href="/search/ded">Yahoo</a>';
-  const actual = getURLsFromHTML(input, 'https://www.google.com');
+  const actual = getURLsFromHTML(input, "https://www.google.com");
   const expected = [
     "https://www.google.com/search",
     "https://www.google.com/search/bitch",
     "https://www.google.com/search/ded",
   ];
+  expect(actual).toEqual(expected);
+});
+
+test("getURLsFromHTML absolute", () => {
+  const inputURL = "https://blog.boot.dev";
+  const inputBody =
+    '<html><body><a href="https://blog.boot.dev"><span>Boot.dev></span></a></body></html>';
+  const actual = getURLsFromHTML(inputBody, inputURL);
+  const expected = ["https://blog.boot.dev/"];
+  expect(actual).toEqual(expected);
+});
+
+test("getURLsFromHTML relative", () => {
+  const inputURL = "https://blog.boot.dev";
+  const inputBody =
+    '<html><body><a href="/path/one"><span>Boot.dev></span></a></body></html>';
+  const actual = getURLsFromHTML(inputBody, inputURL);
+  const expected = ["https://blog.boot.dev/path/one"];
+  expect(actual).toEqual(expected);
+});
+
+test("getURLsFromHTML both", () => {
+  const inputURL = "https://blog.boot.dev";
+  const inputBody =
+    '<html><body><a href="/path/one"><span>Boot.dev></span></a><a href="https://other.com/path/one"><span>Boot.dev></span></a></body></html>';
+  const actual = getURLsFromHTML(inputBody, inputURL);
+  const expected = [
+    "https://blog.boot.dev/path/one",
+    "https://other.com/path/one",
+  ];
+  expect(actual).toEqual(expected);
+});
+
+test("getURLsFromHTML handle error", () => {
+  const inputURL = "https://blog.boot.dev";
+  const inputBody =
+    '<html><body><a href="path/one"><span>Boot.dev></span></a></body></html>';
+  const actual = getURLsFromHTML(inputBody, inputURL);
+  const expected = [];
   expect(actual).toEqual(expected);
 });
