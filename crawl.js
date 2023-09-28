@@ -1,19 +1,35 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-
-async function crawlPage(baseURL, currentURL, pages) {
+const fetch = require("node-fetch"); 
+//taking input from the user
+// const readline = require("readline");
+async function crawlPage(baseURL, currentURL, pages, visitedUrls) {
   // if this is an offsite URL, bail immediately
+  if (!visitedUrls) {
+    visitedUrls = new Set(); // Initialize the set if it's not provided
+  }
   const currentUrlObj = new URL(currentURL);
   const baseUrlObj = new URL(baseURL);
   if (currentUrlObj.hostname !== baseUrlObj.hostname) {
     return pages;
   }
   const normalizedURL = normalizeURL(currentURL);
-  if (pages[normalizedURL] > 0) {
-    pages[normalizedURL]++;
+
+  // Check if the URL has already been visited
+  if (visitedUrls.has(normalizedURL)) {
     return pages;
   }
-  pages[normalizedURL] = 1; // initialize the page
+
+  // Mark the URL as visited
+  visitedUrls.add(normalizedURL);
+
+  // Initialize or increment the page count
+  if (!pages[normalizedURL]) {
+    pages[normalizedURL] = 1;
+  } else {
+    pages[normalizedURL]++;
+  }
+
   console.log(`Crawling ${currentURL}`);
   let htmlBody = "";
   try {
@@ -25,7 +41,7 @@ async function crawlPage(baseURL, currentURL, pages) {
     const contentType = resp.headers.get("content-type");
     if (!contentType.includes("text/html")) {
       console.log("Not HTML: You're dead to me");
-        return pages;
+      return pages;
     }
     htmlBody = await resp.text();
   } catch (err) {
@@ -34,9 +50,10 @@ async function crawlPage(baseURL, currentURL, pages) {
   }
   const urls = getURLsFromHTML(htmlBody, baseURL);
   for (const url of urls) {
-    pages = await crawlPage(baseURL, url, pages);
+    pages = await crawlPage(baseURL, url, pages, visitedUrls);
   }
-  
+
+  return pages; // Return the updated pages object
 }
 
 const normalizeURL = (url) => {
